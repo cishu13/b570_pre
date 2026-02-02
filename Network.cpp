@@ -8,20 +8,47 @@ using std::string, std::vector, std::ifstream, std::istringstream, std::stringst
 
 Network::Network() : users({}), posts({}), tags({}) {}
 
+/**
+ * Loads users and posts from a file into the network database.
+ * 
+ * The function reads a file line by line and differentiates between users and posts
+ * based on the first word (type identifier) on each line:
+ * 
+ * - If the line starts with "User", it's treated as a user entry.
+ *   Format: "User <username>"
+ *   The function extracts the username and adds it to the database.
+ * 
+ * - If the line starts with "Post", it's treated as a post entry.
+ *   Format: "Post <postId> <username> <message content>"
+ *   The function extracts the post ID, username, and message text,
+ *   then adds the post to the database.
+ * 
+ * The differentiation is done by reading the first token from each line
+ * and comparing it against "User" or "Post" string literals.
+ * Any line that doesn't start with either keyword results in an error.
+ * 
+ * @param fileName The path to the file to load
+ * @throws std::invalid_argument if the file cannot be opened
+ * @throws std::runtime_error if the file format is invalid
+ */
 void Network::loadFromFile(string fileName) {
     ifstream file(fileName);
 
-// Check if the file is open
+    // Check if the file is open
     if (!file.is_open()) {
         throw std::invalid_argument("Unable to open file");
     }
 
     string line;
+    // Read file line by line
     while (getline(file, line)) {
         istringstream ss(line);
         string type;
+        // Extract the first word to determine the type (User or Post)
         ss >> type;
 
+        // Check if this line represents a User entry
+        // User lines have format: "User <username>"
         if (type == "User") {
             string userName;
             ss >> userName;
@@ -34,23 +61,28 @@ void Network::loadFromFile(string fileName) {
             } catch (const std::invalid_argument& e) {
                 throw std::runtime_error("Runtime Error");
             }
-        } else if (type == "Post") {
+        } 
+        // Check if this line represents a Post entry
+        // Post lines have format: "Post <id> <username> <message content>"
+        else if (type == "Post") {
             unsigned int id;
             string text;
             string userName;
 
+            // Extract post ID (numeric identifier)
             ss >> id;
+            // Extract username (author of the post)
             ss >> userName;
 
-        // Read the rest of the line as text
+            // Read the rest of the line as the post text/message content
             getline(ss, text);
 
-        // Handle potential errors
+            // Handle potential errors in parsing
             if (ss.fail() || text.empty()) {
                 throw std::runtime_error("Runtime Error");
             }
 
-        // Remove leading whitespace from text
+            // Remove leading whitespace from text (getline includes the space)
             text = text.substr(1);
 
             try {
@@ -59,7 +91,8 @@ void Network::loadFromFile(string fileName) {
                 throw std::runtime_error("Runtime Error");
             }
         } else {
-        // Handle unexpected input
+            // The line doesn't start with "User" or "Post"
+            // Handle unexpected input - file format is invalid
             throw std::runtime_error("Runtime Error");
         }
     }
@@ -181,6 +214,29 @@ vector<string> Network::getMostPopularHashtag() {
     }
 
     return popHashtags;
+}
+
+unsigned int Network::getMaxPostId() {
+    unsigned int maxId = 0;
+    for (unsigned int i = 0; i < posts.size(); ++i) {
+        if (posts[i]->getPostId() > maxId) {
+            maxId = posts[i]->getPostId();
+        }
+    }
+    return maxId;
+}
+
+bool Network::userExists(string userName) {
+    string lowerUserName = userName;
+    for (unsigned int i = 0; i < lowerUserName.length(); i++) {
+        lowerUserName[i] = tolower(lowerUserName[i]);
+    }
+    for (unsigned int i = 0; i < users.size(); i++) {
+        if (users[i]->getUserName() == lowerUserName) {
+            return true;
+        }
+    }
+    return false;
 }
 
 Network::~Network() {
