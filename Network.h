@@ -22,6 +22,8 @@ class Network {
         std::vector<Post*> getPostsByUser(std::string userName);
         std::vector<Post*> getPostsWithTag(std::string tagName);
         std::vector<std::string> getMostPopularHashtag();
+        unsigned int getMaxPostId();
+        bool userExists(std::string userName);
 };
 
 # endif
