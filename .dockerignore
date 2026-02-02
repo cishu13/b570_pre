@@ -1,0 +1,28 @@
+# Ignore compiled binaries
+*.out
+*.exe
+*.o
+*.a
+*.so
+
+# Ignore build directories
+build/
+cmake-build-*/
+.build/
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore version control
+.git/
+.gitignore
+
+# Ignore Docker files during build
+Dockerfile
+.dockerignore
+docker-compose.yml
+build_docker.sh
+run_docker.sh
